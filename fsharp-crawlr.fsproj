@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="canopy" Version="2.1.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.42.0.1" />
   </ItemGroup>
 
 </Project>

@@ -13,7 +13,7 @@ let createDriver pathDownload =
     chromeOptions.AddUserProfilePreference ("download.default_directory", pathDownload)
     chromeOptions.AddUserProfilePreference ("profile.default_content_settings.popups", 0)
     chromeOptions.AddArguments ("--start-maximized");
-    chromeOptions.AddArgument ("--user-data-dir=" + pathDownload + @"\UserData")
+    chromeOptions.AddArgument (@"--user-data-dir=C:\Workspace\Empty\User Data")
 
     driver <- new ChromeDriver(".",chromeOptions)
     driver

@@ -1,24 +1,26 @@
 ﻿//these are similar to C# using statements
-open canopy.runner.classic
-open canopy.configuration
-open canopy.classic
-open canopy
-open OpenQA.Selenium.Chrome
-open OpenQA.Selenium.Support.UI
-open System
 open OpenQA.Selenium
+open Core
+open System.Runtime.InteropServices.ComTypes
+open System
 
-//start an instance of chrome
-chromeDir <- "."
+type Link ={
+    Parent: string
+    Children: List<string>
+}
 
-let chromeOptions = OpenQA.Selenium.Chrome.ChromeOptions()
-chromeOptions.AddUserProfilePreference ("download.default_directory", @"C:\Workspace\Downloads")
+let path = Console.ReadLine()
 
+let envato = "https://elements.envato.com"
 
-let driver = new ChromeDriver(".",chromeOptions)
-
+let driver = createDriver path
 
 let downloadButtonInPanel = """button[data-test-selector="download-without-license"]"""
+let menuContainer = """ul[class="vOWd8KiH"]"""
+
+let getFolderName (link:string) = 
+    link.Replace (envato+"/", "")
+
 
 let downloadDisplayed e =
     (driver.FindElementByCssSelector e).Displayed
@@ -27,38 +29,49 @@ let downloadDisapear e =
     (driver.FindElementByCssSelector e) = null
 
 let download (e : IWebElement) =
-    e.Click() |> ignore
-    let button = driver.FindElementByCssSelector(downloadButtonInPanel)
-    button.Click() |> ignore
-    let btn2 = driver.FindElementByCssSelector(downloadButtonInPanel)
+    e.Click () |> ignore
+    let button = element downloadButtonInPanel
+    button.Click () |> ignore
+    let btn2 = element downloadButtonInPanel
     while btn2 = null do
        sleep 1
 
-let ctrlClickAll selector =
-    driver.FindElementsByCssSelector selector
+let downloadAll selector =
+    elements selector
     |> Seq.iter (fun element -> 
     download element
-    sleep 3
-    )
-    
+    sleep 3)
 
-//this is how you define a test
-"Travel to envato" &&& fun _ ->
-    //this is an F# function body, it's whitespace enforced
+start driver
 
-    //go to url
-    driver.Navigate().GoToUrl "https://elements.envato.com/sign-in"
+navigate (envato + "/sign-in")
 
-    while driver.Url = "https://elements.envato.com/sign-in" do
-        sleep 3
-    
-    driver.Url <- "https://elements.envato.com/stock-video"
+while (currentUrl ()).Contains (envato + "/sign-in" ) do
+    sleep 1
 
-    ctrlClickAll """button[data-test-selector="item-card-download-button"]"""
-    
-run()
+navigate envato
+
+let menu =  element menuContainer 
+let links = 
+    childrensByTag (menu, "a") 
+    |> Seq.map (fun f -> f.GetAttribute ("href")) 
+    |> Seq.distinct
+    |> List.ofSeq
+
+let filterChilds (list:List<string>, p:string) =
+    List.filter (fun (f:string) -> f.Contains(p) && not (f = p)) list
+
+let filterParents list =
+    List.filter (fun (f:string) -> (List.findIndex (fun l -> l = f) list = List.findIndex (fun (l:string) -> f.Contains l) list)) list
+ 
+let structObj = filterParents links 
+                |> List.map (fun p -> { 
+                    Parent = p
+                    Children = filterChilds (links, p)
+                })
+
 
 printfn "press [enter] to exit"
 System.Console.ReadLine() |> ignore
 
-quit()
+quit ()

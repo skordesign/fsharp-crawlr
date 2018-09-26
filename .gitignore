@@ -6,3 +6,4 @@
 /.vs/fsharp-crawlr/v15
 /obj
 /.vs/fsharp-crawlr/DesignTimeBuild
+/bin/Release/netcoreapp2.1

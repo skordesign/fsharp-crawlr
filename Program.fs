@@ -9,7 +9,7 @@ type Link ={
     Children: List<string>
 }
 
-let path = Console.ReadLine()
+let path = Environment.CurrentDirectory + "Downloads";
 
 let envato = "https://elements.envato.com"
 
@@ -19,7 +19,7 @@ let downloadButtonInPanel = """button[data-test-selector="download-without-licen
 let menuContainer = """ul[class="vOWd8KiH"]"""
 
 let getFolderName (link:string) = 
-    link.Replace (envato+"/", "")
+    link.Replace (envato + "/", "")
 
 
 let downloadDisplayed e =
@@ -70,8 +70,19 @@ let structObj = filterParents links
                     Children = filterChilds (links, p)
                 })
 
-
-printfn "press [enter] to exit"
-System.Console.ReadLine() |> ignore
-
 quit ()
+
+
+let openBrowser link =
+    let customDriver = createDriver (path + (getFolderName link))
+    start customDriver
+    navigate link
+
+structObj   |> List.filter (fun i -> not (i.Parent.Contains("all-items")))
+            |> List.iter (fun i -> 
+            if i.Children.Length = 0 then
+                openBrowser i.Parent
+            else
+                for link in i.Children do
+                    openBrowser link
+            )

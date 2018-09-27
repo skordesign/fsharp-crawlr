@@ -6,15 +6,17 @@ open OpenQA.Selenium
 open OpenQA.Selenium.Interactions
 open System
 
+let mutable userdataPath:string = "";
 let mutable driver: ChromeDriver = null
 
 let createDriver pathDownload = 
     
     let chromeOptions = OpenQA.Selenium.Chrome.ChromeOptions()
     chromeOptions.AddUserProfilePreference ("download.default_directory", pathDownload)
+    chromeOptions.AddUserProfilePreference ("download.prompt_for_download", false)
     chromeOptions.AddUserProfilePreference ("profile.default_content_settings.popups", 0)
     chromeOptions.AddArguments ("--start-maximized");
-    chromeOptions.AddArgument (@"--user-data-dir=C:\Workspace\Empty\User Data")
+    chromeOptions.AddArgument (@"--user-data-dir=" + userdataPath)
 
     driver <- new ChromeDriver(".",chromeOptions)
     driver
@@ -31,8 +33,18 @@ let elements selector =
     driver.FindElementsByCssSelector selector
 
 let element selector =
-    driver.FindElementByCssSelector selector
+    try
+        driver.FindElementByCssSelector selector
+    with 
+        | :? Exception as ex -> null
 
+
+let displayed selector = 
+    let ele = element selector
+    if ele = null then
+        false
+    else
+        ele.Displayed
 let navigate url = 
     driver.Url <- url
 

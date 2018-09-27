@@ -10,7 +10,13 @@ type Link ={
     Children: List<string>
 }
 
-let path = Environment.CurrentDirectory + "Downloads";
+Console.WriteLine("Download tool Envato for chrome")
+Console.WriteLine("Step 1 :Go to [https://elements.envato.com] and login")
+Console.WriteLine("Step 2 :Press Windows + R")
+Console.WriteLine("Step 3 : Paste to it [%LOCALAPPDATA%\Google\Chrome\User Data]")
+Console.WriteLine("Step 4: Copy directory in windows explorer and paste here")
+userdataPath <- Console.ReadLine ()
+let mutable path = Environment.CurrentDirectory + "\\Downloads";
 
 let envato = "https://elements.envato.com"
     
@@ -20,13 +26,20 @@ let downloadButtonInPanel = """button[data-test-selector="download-without-licen
 let menuContainer = """ul[class="vOWd8KiH"]"""
 let downloadIcon = """button[data-test-selector="item-card-download-button"]"""
 
+
+let getNextButton () =
+    Seq.last (elements """a[class="_36I3CjyO _635CaDn5"]""")
+
 let getFolderName (link:string) = 
     link.Replace(envato ,"").Replace("/","\\")
 
 let countDownload () =
-    let files =  (Directory.GetFiles path)
-                |> Array.filter (fun (file:string) -> file.Contains("crdownload"))
-    files.Length
+    if not (Directory.Exists(path)) then
+        0
+    else
+        let files =  (Directory.GetFiles path)
+                    |> Array.filter (fun (file:string) -> file.Contains("crdownload"))
+        files.Length
 
 let downloadDisplayed e =
     (driver.FindElementByCssSelector e).Displayed
@@ -35,18 +48,26 @@ let downloadDisapear e =
     (driver.FindElementByCssSelector e) = null
 
 let download (e : IWebElement) =
+    while countDownload () >= 5 do
+        printfn "Downloading : %d items" (countDownload ())
+        sleep 3
     e.Click () |> ignore
+    while not (displayed downloadButtonInPanel) do
+       sleep 1
     let button = element downloadButtonInPanel
     button.Click () |> ignore
-    let btn2 = element downloadButtonInPanel
-    while btn2 = null do
+    sleep 1
+    while displayed downloadButtonInPanel do
        sleep 1
 
-let downloadAll selector =
+let rec downloadAll selector =
     elements selector
     |> Seq.iter (fun element -> 
     download element
     sleep 3)
+    if not (getNextButton () = null) then
+        (getNextButton ()).Click ()
+        downloadAll selector
 
 start driver
 
@@ -82,9 +103,12 @@ quit ()
 
 let openBrowser link =
     let customDriver = createDriver (path + (getFolderName link))
+    path <- (path + (getFolderName link))
     start customDriver
     navigate link
     downloadAll downloadIcon
+    while countDownload () > 0 do
+        sleep 3
     quit ()
 
 structObj |> List.filter (fun i -> not (i.Parent.Contains("all-items")))

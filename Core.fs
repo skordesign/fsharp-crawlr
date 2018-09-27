@@ -4,6 +4,7 @@ open System.Threading
 open OpenQA.Selenium.Chrome
 open OpenQA.Selenium
 open OpenQA.Selenium.Interactions
+open System
 
 let mutable driver: ChromeDriver = null
 
@@ -20,7 +21,6 @@ let createDriver pathDownload =
 
 let sleep seconds =
      Thread.Sleep(1000*seconds)
-
 
 let ctrlClick selector =
     let ele = driver.FindElementByCssSelector selector

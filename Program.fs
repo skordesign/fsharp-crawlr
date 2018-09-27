@@ -3,6 +3,7 @@ open OpenQA.Selenium
 open Core
 open System.Runtime.InteropServices.ComTypes
 open System
+open System.IO
 
 type Link ={
     Parent: string
@@ -12,7 +13,7 @@ type Link ={
 let path = Environment.CurrentDirectory + "Downloads";
 
 let envato = "https://elements.envato.com"
-
+    
 let driver = createDriver path
 
 let downloadButtonInPanel = """button[data-test-selector="download-without-license"]"""
@@ -22,6 +23,10 @@ let downloadIcon = """button[data-test-selector="item-card-download-button"]"""
 let getFolderName (link:string) = 
     link.Replace(envato ,"").Replace("/","\\")
 
+let countDownload () =
+    let files =  (Directory.GetFiles path)
+                |> Array.filter (fun (file:string) -> file.Contains("crdownload"))
+    files.Length
 
 let downloadDisplayed e =
     (driver.FindElementByCssSelector e).Displayed

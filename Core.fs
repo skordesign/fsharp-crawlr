@@ -15,10 +15,10 @@ let createDriver pathDownload =
     chromeOptions.AddUserProfilePreference ("download.default_directory", pathDownload)
     chromeOptions.AddUserProfilePreference ("download.prompt_for_download", false)
     chromeOptions.AddUserProfilePreference ("profile.default_content_settings.popups", 0)
-    chromeOptions.AddArguments ("--start-maximized");
+    chromeOptions.AddArgument ("--start-maximized")
     chromeOptions.AddArgument (@"--user-data-dir=" + userdataPath)
 
-    driver <- new ChromeDriver(".",chromeOptions)
+    driver <- new ChromeDriver(Environment.CurrentDirectory,chromeOptions)
     driver
 
 let sleep seconds =
@@ -63,3 +63,7 @@ let children (e: IWebElement, selector:string) =
 
 let childrensByTag (e: IWebElement, selector:string) = 
     e.FindElements (By.TagName selector)
+
+let click (ele: IWebElement) =
+    let js = driver :> IJavaScriptExecutor
+    js.ExecuteScript ("arguments[0].click();", ele) |> ignore

@@ -28,7 +28,10 @@ let downloadIcon = """button[data-test-selector="item-card-download-button"]"""
 
 
 let getNextButton () =
-    Seq.last (elements """a[class="_36I3CjyO _635CaDn5"]""")
+    if (elements """a[class="_36I3CjyO _635CaDn5"]""").Count >= 2 then
+        Seq.last (elements """a[class="_36I3CjyO _635CaDn5"]""")
+    else 
+        null
 
 let getFolderName (link:string) = 
     link.Replace(envato ,"").Replace("/","\\")
@@ -48,25 +51,26 @@ let downloadDisapear e =
     (driver.FindElementByCssSelector e) = null
 
 let download (e : IWebElement) =
-    while countDownload () >= 5 do
+    Console.WriteLine("Download: " + e.ToString());
+    while countDownload () >= 2 do
         printfn "Downloading : %d items" (countDownload ())
         sleep 3
-    e.Click () |> ignore
+    click e
     while not (displayed downloadButtonInPanel) do
        sleep 1
     let button = element downloadButtonInPanel
-    button.Click () |> ignore
-    sleep 1
+    click button
     while displayed downloadButtonInPanel do
        sleep 1
 
 let rec downloadAll selector =
+    Console.WriteLine("Find : " + selector);
     elements selector
     |> Seq.iter (fun element -> 
     download element
     sleep 3)
     if not (getNextButton () = null) then
-        (getNextButton ()).Click ()
+        click (getNextButton ())
         downloadAll selector
 
 start driver
@@ -104,6 +108,7 @@ quit ()
 let openBrowser link =
     let customDriver = createDriver (path + (getFolderName link))
     path <- (path + (getFolderName link))
+    Console.WriteLine("Path download" + path)
     start customDriver
     navigate link
     downloadAll downloadIcon
@@ -114,8 +119,10 @@ let openBrowser link =
 structObj |> List.filter (fun i -> not (i.Parent.Contains("all-items")))
           |> List.iter (fun i -> 
           if i.Children.Length = 0 then
+             Console.WriteLine("Open link" + i.Parent);
              openBrowser i.Parent   
           else
              for link in i.Children do
+                Console.WriteLine("Open link" + link);
                 openBrowser link
           )
